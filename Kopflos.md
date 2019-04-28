@@ -68,7 +68,7 @@ Der Grund und meine Motivation ist ganz einfach: Ich möchte Ressourcen sparen s
 
 ### Vorbereitung und Anpassungen
 
-Nun, nachdem Raspbian Lite installiert wurde, empfehle ich schon hier die ersten grundlegende Sachen festzulegen. Dazu der Befehl:
+Nun, nachdem Raspbian Lite installiert wurde, empfehle ich schon hier die ersten grundlegende Sachen festzulegen. Dazu logst dich als User "pi" ein mit dem Passwort "raspberrz" (statt "raspberry"). Die Tasten "z" und "y" sind noch vertauscht. Wird aber schon in nächsten Schritten behoben. Jetzt dazu der Befehl:
 ```bash
 sudo raspi-config
 ```
@@ -111,6 +111,27 @@ Wobei dist-upgrade eventuell überflüssig ist. Aber sicher ist sicher. Jetzt no
 ```bash
 sudo rpi-update
 ```
-Und ja, hier folgt garantiert noch ein Firmware-Update (wenn du nicht vor kurzem gemacht hast). Das ist nämlich das was vor dem PINN geladen wird (Rainbow-Screen).
+Und ja, hier folgt garantiert noch ein Firmware-Update (wenn du nicht vor kurzem gemacht hast). Das ist nämlich das was vor dem PINN geladen wird (Rainbow-Screen). Vor dem Reboot noch einen Passwort für root setzen. Aber Vorsicht mit dem Sonderzeichen!:
+```bash
+sudo passwd root
+```
+Und jetzt Gerät neustarten z.B. mit Befehl "reboot". Nach dem Neustart logst du dich als "root" und gibst den zuvor festgelegten Passwort ein.
 
-Und jetzt Gerät neustarten z.B. mit Befehl "reboot".
+Denn nur von hier aus ist eine Änderung an den Benutzernamen möglich. Man kann zwar einen neuen Benutzer anlegen. Aber dann könnte das arm64-Projekt fehlschlagen. Da mit dem Befehl "adduser" einen neuen User-ID festgelegt wird. Zudem ist es von hier aus eher umständlich die ganzen Gruppen einzeln einzutippen oder gar langen komplexen Befehl zu nutzen. Da der neue Nutzer keine Gruppen besitzt außer sich selbst. Achte auch darauf, dass für SSH-Verbindung das gleiche gilt. Wenn du via SSH arbeitest, sollte alle Verbindung mit "pi"-Login getrennt werden. Aber auch das Autologin in raspi-config sollte ausgeschaltet sein. Da es sonst automatisch via "pi" in den Desktop-Umgebung bzw. Shell einloggt und somit die nachfolgende Schritte nicht mehr funktionieren.
+
+Hast du dich dann erfolgreich als "root" eingeloggt, dann kannnst du dein eigenes Nutzernamen festlegen. Die folgenden Befehlen ersetzt du newUsername mit deinem neuen Nutzername:
+```bash
+usermod -l newUsername pi
+usermod -m -d /home/newUsername newUsername
+groupmod -n newUsername pi
+passwd newUsername
+logout
+```
+Neben setzen neuen Username macht auch Sinn den Home-Verzeichnis und den Gruppennamen ebenfalls zu ändern. Wobei Gruppenname eher optional ist. Für arm64-Projekt sollte aber der Home-Verzeichnis, Nutzername und Gruppenname gleich sein, um mögliche Probleme zu vermeiden. Die Passwort-Änderung machte vorher nur wenig Sinn, da der Zeichensatz für die Tastatur erst nach dem Local-Settings, Update und Neustart auf deutschem Layout gesetzt wird.
+
+Nach dem Logout, kannst du dich mit neuen Nutzernamen einloggen. Passwort für root brauchen wir nicht mehr:
+```bash
+sudo passwd -d root
+```
+
+Somit wäre die komplette Vorbereitung abgeschlossen. Einige der nachfolgenden Projekte werden von diesen Vorbereitungen profitieren bzw. manche davon werden darauf aufgebaut!
