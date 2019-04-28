@@ -10,15 +10,15 @@ In diesem Kapitel geht es um die grafische Oberfläche und deren Anwendungen. De
 
 Für Raspbian stehen auch mindestens zwei verschiedene OS-Installer zur Verfügung (BerryBoot, NOOB, PINN, WD PiDrive). Zudem existieren noch verschiedene Versionen von Bootloader, welches auch eine Art Firmware für Raspberry Pi darstellt.
 
-Jetzt schon zu viel des Guten? Nein, ich bin noch am Anfang und könnte noch ganze Menge andere Sachen aufzählen. Vielleicht kommt das noch. Zurück zu Angelegenheiten des Raspberry Pi's: Ich gehe jetzt Schritt für Schritt durch und ordne jedes Thema in eigenen Unterkapitel zu.
+Jetzt schon zu viel des Guten? Nein, ich bin noch am Anfang und könnte noch ganze Menge andere Sachen aufzählen. Vielleicht kommt das noch. Zurück zu Angelegenheiten des Raspberry Pi's: Ich gehe jetzt Schritt für Schritt durch und ordne jedes Thema in eigenen Unterkapitel zu. So weit es geht natürlich!
 
 
 ## OS-Installer und WLAN-Conf
 
-Wie in der Einführung schon erwähnt, gibt verschiedene OS-Installer. Der bekannteste dürfte immernoch NOOB sein und wird gern mit Betriebssystem Raspbian Full geliefert. Dieses NOOB-Variante belegt aber schon einiges an Speicherplatz. Nun die OS-Installer bieten in Normalfall eine einfache Möglichkeit WLAN einzurichten und so wird dann die "Full"-Variante beinahe überflüssig. Ich sag deshalb "beinahe", weil diese Full-Version evtl. doch benötit wird, wenn man versucht ohne Hilfe eines anderen PCs versuchen möchte in Hidden-WLAN einzuloggen. (Über GUI ist mir bisher weder bei NOOB noch PINN gelungen.) Selbst unter Raspbian klappt das mit Hidden-WLAN nicht so einfach. Aber zum Glück reicht eine Konfigurationsdatei aus die man sogar leicht anlegen kann:
+Wie in der Einführung schon erwähnt, gibt verschiedene OS-Installer. Der bekannteste dürfte immernoch NOOB sein und wird gern mit Betriebssystem Raspbian Full geliefert. Dieses NOOB-Variante belegt aber schon einiges an Speicherplatz. Nun die OS-Installer bieten im Normalfall eine einfache Möglichkeit WLAN einzurichten und so wird dann die "Full"-Variante beinahe überflüssig. Ich sage deshalb "beinahe", weil diese Full-Version evtl. doch benötit wird. Nämlich dann wenn man versucht ohne Hilfe eines anderen PCs in Hidden-WLAN einzuloggen. (Über GUI ist mir bisher weder bei NOOB noch PINN gelungen.) Selbst unter Raspbian klappt das mit Hidden-WLAN nicht so einfach. Aber zum Glück reicht eine Konfigurationsdatei aus die man sogar leicht anlegen kann:
 ```bash
 file='/etc/wpa_supplicant/wpa_supplicant.conf' &&
-echo "Erstelle die Datei '$file' mit dem Inhalt:" &&
+sudo echo -e "\033[36m\nErstelle die Datei '$file' mit dem Inhalt:\033[0m" &&
 echo 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country=DE
@@ -28,13 +28,17 @@ network={
 	scan_ssid=1
 	psk="<dein Wlan-Passwort>"
 }
-' | sudo tee $file && sudo chmod 744 $file && unset file
+' | sudo tee $file && sudo chmod 644 $file && unset file
 ```
-Da wir unter einem OS-Installer ebenfalls WLAN benötigen werden, braucht es eigentlich nur die selbe Datei in entsprechenden Verzeichnis abgelegt zu werden. Dazu bräuchten wir zuerst den Zugang für den entsprechenden Verzeichnis:
+Da wir unter einem OS-Installer ebenfalls WLAN benötigen werden, braucht es eigentlich nur die selbe Datei in entsprechenden Verzeichnis abgelegt zu werden. Das entsprechende Verzeichnis liegt aber auf eine andere Partition. Diese Partition trägt normalerweise den Namen "/dev/mmcblk0p5". Es ist auch möglich, dass die Settings-Partition einen anderen Namen trägt. Also schauen wir mit folgenden Befehl nach:
+```bash
+lsblk --output NAME,SIZE,TYPE,MOUNTPOINT,LABEL
+```
+Wir brauchen die Partition mit dem Label "SETTINGS". Eventuell muss Mount-Befehl noch angepasst werden. Zeigt die Ausgabe des lsblk-Befehls bei SETTINGS-Partition einen Mountpoint an, dann ist der nachfolgende Befehl überflüssig:
 ```bash
 sudo mkdir /media/settings && sudo mount /dev/mmcblk0p5 /media/settings
 ```
-Anschließend braucht die Datei nur noch kopiert zu werden:
+Anschließend brauchst du die Datei nur noch zu kopieren:
 ```bash
 sudo cp /etc/wpa_supplicant/wpa_supplicant.conf /media/settings/
 ```
@@ -60,7 +64,7 @@ Du kannst dich durch verschiedene Betriebssysteme probieren. Aber eine Sache ist
 
 ### Aber warum geht hier mit Raspbian Lite weiter?
 
-Der Grund und meine Motivation ist ganz einfach: Ich möchte Ressourcen sparen soweit wie es geht, aber auch komplett was anderes an grafische Oberfläche haben. Die Desktop-Umgebung die bei Raspbian Full oder Raspbian Recommend mitgeliefert wird, ist eine angepasste Version des LXDE. Ich wollte diese modifizieren und zudem gab es auch noch extrem störende Verhalten welches aus dem LX-Panel hervorging. So wurde z.B. meine angelegte .asoundrc-Datei ständig überschrieben. Habe ich Schreibschutz draufgelegt, so stürzte LX-Panel ab, wenn ich auf Lautsprecher-Symbol ging. Da ich eben auch anwendungstechnisch auch meine Vorzüge und vieles ausprobiert habe, bleibe ich auf Basis von Raspbian Lite. Ich könnte auch zu Arch wechseln. Aber da ich schon bereits sehr viel von Raspbian wusste und auch sehr leicht ist an die Problemlösungen ranzukommen, wagte ich den Wechsel nicht und fand meinen optimalen Ergebnis schon bereits wiederholt auf Raspbian Lite.
+Der Grund und meine Motivation ist ganz einfach: Ich möchte Ressourcen sparen soweit wie es geht, aber auch komplett was anderes an grafische Oberfläche haben. Die Desktop-Umgebung die bei Raspbian Full oder Raspbian Recommend mitgeliefert wird, ist eine angepasste Version des LXDE. Ich wollte die LXDE-Oberfläche modifizieren und bekam ständig neue Probleme. So zerflückte ich das System immer mehr und mehr und es kamen weitere Probleme auf während ich eine gelöst hatte. Zudem gab es auch noch extrem störende Verhalten welches aus dem LX-Panel hervorging. So wurde z.B. meine angelegte .asoundrc-Datei ständig überschrieben. Habe ich Schreibschutz draufgelegt, so stürzte LX-Panel ab, wenn ich auf Lautsprecher-Symbol ging. Da ich eben auch anwendungstechnisch auch meine Vorzüge und vieles ausprobiert habe, bleibe ich auf Basis von Raspbian Lite. Ich könnte auch zu Arch wechseln. Aber da ich schon bereits sehr viel von Raspbian wusste und auch sehr leicht ist an die Problemlösungen ranzukommen, wagte ich den Wechsel nicht und fand meinen optimalen Ergebnis schon bereits wiederholt auf Raspbian Lite.
 
 ### Vorbereitung und Anpassungen
 
@@ -68,11 +72,12 @@ Nun, nachdem Raspbian Lite installiert wurde, empfehle ich schon hier die ersten
 ```bash
 sudo raspi-config
 ```
-Vielleicht wünscht du dir einen anderen Hostnamen. Also gehst du auf "2 Network Options" und dann "N1 Hostname". Da wählst du einen anderen Namen. Für deutsch-sprachigen Raum wäre entsprechende regionale Einstellungen praktisch. Diese findest du unter "4 Localisation Options".
+Vielleicht wünschst du dir einen anderen Hostnamen. Also gehst du auf "2 Network Options" und dann "N1 Hostname". Da wählst du einen anderen Namen. Diese Option ändert in Wirklichkeit nur zwei Dateien: "/etc/hostname" und "/etc/hosts"
 
-Fangen wir mit Einstellungen der Zeichensätzen an. Dazu gehst du auf "I1 Change Locale", scrollst runter und wählst mit Leertaste einmal "de_DE.UTF-8 UTF-8" und optional noch "en_US.UTF-8 UTF-8" aus. Anschließend einmal TAB-Taste drücken und dann Enter. Es folgt eine weitere Abfrage und die zuvor ausgewälten Einstellungen tauchen neben "C.UTF-8" auf. Diese Einstellung wirkt auf das ganze System aus. Wählst du "Keine" aus, so entscheiden Anwendungen, welche Sprache dieser nutzt. "C.UTF-8" ist eine Fallbacklösung und wenn diese ausgewählt ist, erscheint eventuell Entwicklersprache. Diese ist häufig noch nicht mal auf Englisch. (Installiert man z.B. Wamp [wenn diese überhaupt für Raspbian existiert] so erscheint diese auf französisch.) Wählst du "de_DE.UTF-8" aus, dann wird für das ganze System automatisch deutsche Sprache bzw. Übersetzung ausgewählt. "en_US.UTF-8 UTF-8" das ganze in us-englischer Sprache bzw. Übersetzung. Zudem wenn man "de_DE.UTF-8 UTF-8" auswählt, dann wird in folgende Reihenfolge priorisiert: "de_DE.UTF-8 UTF-8", "en_US.UTF-8 UTF-8" und dann erst "C.UTF-8".
+Für deutsch-sprachigen Raum wäre entsprechende regionale Einstellungen praktisch. Diese findest du unter "4 Localisation Options".
+Fangen wir mit Einstellungen der Zeichensätzen an. Dazu gehst du auf "I1 Change Locale", scrollst runter und wählst mit Leertaste einmal "de_DE.UTF-8 UTF-8" und optional noch "en_US.UTF-8 UTF-8" aus. Anschließend einmal TAB-Taste drücken und dann Enter. Es folgt eine weitere Abfrage und die zuvor ausgewälten Einstellungen tauchen neben "C.UTF-8" auf. Diese Einstellung wirkt auf das ganze System aus. Wählst du "Keine" aus, so entscheiden die Anwendungen welche Sprache dieser nutzen. "C.UTF-8" ist eine Fallbacklösung und wenn diese ausgewählt ist, erscheint eventuell Entwicklersprache. Diese ist häufig noch nicht mal auf Englisch. (Installiert man z.B. Wamp [wenn diese überhaupt für Raspbian existiert] so erscheint diese auf französisch.) Wählst du "de_DE.UTF-8" aus, dann wird für das ganze System automatisch deutsche Sprache bzw. Übersetzung ausgewählt. "en_US.UTF-8 UTF-8" das ganze in us-englischer Sprache bzw. Übersetzung. Zudem wenn man "de_DE.UTF-8 UTF-8" auswählt, dann wird in folgende Reihenfolge priorisiert: "de_DE.UTF-8 UTF-8", "en_US.UTF-8 UTF-8" und dann erst "C.UTF-8".
 
-Unter "4 Localisation Options" kannst du auch schon die Zeitzone setzen, sodass die Uhrzeit auch direkt richtig angezeigt wird. Hier wählst du dann "I2 Change Timezone" dann Europe anschließend Berlin für deutsche Zeit. "I3 Change Keyboard Layout" ist eher uninteressant und wird nicht wirklich benötigt. Den entsprechenden Zeichensatz auf der Tastatur haben wir bereits durch "I1 Change Locale" erheblich verändert. "I4 Change Wi-fi Country" ist auch überflüssig, da wir bereits durch die Datei "wpa_supplicant.conf" in unserem Settings-Partition eingerichtet hatten. (Kapitel OS-Installer und WLAN-Conf)
+Unter "4 Localisation Options" kannst du auch schon die Zeitzone setzen, sodass die Uhrzeit auch direkt richtig angezeigt wird. Hier wählst du dann "I2 Change Timezone" dann Europe anschließend Berlin für deutsche Zeit. "I3 Change Keyboard Layout" ist eher uninteressant und wird nicht wirklich benötigt. Den entsprechenden Zeichensatz auf der Tastatur haben wir bereits durch "I1 Change Locale" erheblich verändert. "I4 Change Wi-fi Country" ist auch überflüssig, da wir bereits durch die Datei "wpa_supplicant.conf" in unserem Settings-Partition eingerichtet hatten. (Kapitel [OS-Installer und WLAN-Conf](os-installer-und-wlan-conf))
 
 Unter "5 Interfacing Options" wird's spannend. Hier kann man verschiedene Module ein- bzw. ausschalten. Die am häufigsten gefragte Option ist natürlich SSH. Für grafische Fern-Zugriff eignet sich VNC (dazu benötigt man VNC-fähiges App auf Endgerät, mein Windows 10 Phone kann das nicht). Die anderen Optionen sind entweder selbsterklärend oder für Leute mit speziellen Vorhaben.
 
@@ -80,17 +85,17 @@ Unter "5 Interfacing Options" wird's spannend. Hier kann man verschiedene Module
 
 Unter "7 Advanced Options" gibt es mindestnes noch wirklich eine interessante Option: "A3 Memory Split" hat nämlich Einfluss auf CPU-Last. Ist der Speicher für Grafik-Einheit zu klein, dann steigt die GPU und indirekt CPU-Last, da es dann häufiger die grafische Elemente neu berechnen muss.
 
-Zuletzt ist unter "7 Advanced Options" noch eine weitere Option von Bedeutung: "A7 GL Driver" wird "G2 GL (Fake KMS)" für arm64-Projekt benötigt. KMS ist ein OpenGL-Desktop-Treiber und kann von OpenGL aus entweder Kernel-KMS-Treiber (Full KMS) oder DispmanX API for composition (Fake KMS) verwendet werden. Da beim arm64-Projekt Video-Playback zum Einsatz kommt, macht es wenig Sinn über Kernel laufen zu lassen, wenn man die Bildübertragung direkt an Bildschirm schicken kann. (Quelle: https://www.raspberrypi.org/forums/viewtopic.php?t=192017)
+Zuletzt ist unter "7 Advanced Options" noch eine weitere Option von Bedeutung: "A7 GL Driver" wird "G2 GL (Fake KMS)" für arm64-Projekt benötigt. KMS ist ein OpenGL-Desktop-Treiber und kann von OpenGL aus entweder Kernel-KMS-Treiber (Full KMS) oder DispmanX API for composition (Fake KMS) verwendet werden. Da beim arm64-Projekt Video-Playback zum Einsatz kommt, macht es wenig Sinn über Kernel laufen zu lassen, wenn man die Bilder direkt an Bildschirm schicken kann. (Quelle: https://www.raspberrypi.org/forums/viewtopic.php?t=192017)
 
 Somit wäre man mit Raspi-Konfiguration durch und können einfach mit Escape-Taste verlassen. Jetzt wäre dringend notwendig das System auf aktuellen Stand zu bringen. Aber vorher noch eine Anpassung. Nicht das wir die Arbeit doppelt machen.
 ```bash
 sudo nano /etc/apt/sources.list
 ```
-und ändern die Repository von:
+und ändern die Repository:
 ```bash
 deb http://raspbian.raspberrypi.org/raspbian/ stretch main contrib non-free rpi
 ```
-zu:
+wir ersetzen "raspbian.raspberrypi.org" durch "mirrordirector.raspbian.org":
 ```bash
 deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi
 ```
@@ -98,11 +103,11 @@ und anschließend drücke strg+x und bestätige mit "j" und speichere unter glei
 ```bash
 sudo apt update && sudo apt full-upgrade
 ```
-Somit wird das ganze über entprechende topologisch nächstliegende Spiegel-Server aktualisiert. Das kann bei zahlreichen Paketen doch recht ordentlichen zeitlichen Unterschied machen. Bestimmt denkst du jetzt wurde alles aktualisiert. Nein, es folgen noch zwei weitere Befehle:
+Somit werden die Updates über entprechende topologisch nächstliegende Spiegel-Server aktualisiert. Das kann bei zahlreichen Paketen doch recht ordentlichen zeitlichen Unterschied machen. Bestimmt denkst du jetzt wurde alles aktualisiert. Nein, es folgen noch zwei weitere Befehle:
 ```bash
 sudo apt-get dist-upgrade
 ```
-Wobei dist-upgrade ist eventuell überflüssig. Aber sicher ist sicher. Jetzt noch:
+Wobei dist-upgrade eventuell überflüssig ist. Aber sicher ist sicher. Jetzt noch:
 ```bash
 sudo rpi-update
 ```
