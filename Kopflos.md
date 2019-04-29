@@ -111,7 +111,11 @@ Wobei dist-upgrade eventuell überflüssig ist. Aber sicher ist sicher. Jetzt no
 ```bash
 sudo rpi-update
 ```
-Und ja, hier folgt garantiert noch ein Firmware-Update (wenn du nicht vor kurzem gemacht hast). Das ist nämlich das was vor dem PINN geladen wird (Rainbow-Screen). Vor dem Reboot noch einen Passwort für root setzen. Aber Vorsicht mit dem Sonderzeichen!:
+Und ja, hier folgt garantiert noch ein Firmware-Update (wenn du nicht vor kurzem gemacht hast). Das ist nämlich das was vor dem PINN geladen wird (Rainbow-Screen). Zu guter Letzt noch das ganze bereinigen:
+```bash
+sudo apt-get clean
+```
+Vor dem Reboot noch einen Passwort für root setzen. Aber Vorsicht mit dem Sonderzeichen!:
 ```bash
 sudo passwd root
 ```
