@@ -89,7 +89,7 @@ Zuletzt ist unter "7 Advanced Options" noch eine weitere Option von Bedeutung: "
 
 Somit wäre man mit Raspi-Konfiguration durch und können einfach mit Escape-Taste verlassen. Jetzt wäre dringend notwendig das System auf aktuellen Stand zu bringen. Aber vorher noch eine Anpassung. Nicht das wir die Arbeit doppelt machen.
 ```bash
-sudo nano /etc/apt/sources.list
+sudo apt edit-sources
 ```
 und ändern die Repository:
 ```bash
