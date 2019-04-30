@@ -20,7 +20,7 @@ Nach längerem Suchen nach Lösungen für ein besseren Ergebnis, kam ich irgendw
 Nun, Normalerweise werden die Abhängigkeiten automatisch geholt. Aber wir wollen gewisse Dinge vorweg nehmen und möglichst wenig Pakete zu installieren:
 ```bash
 sudo apt-get install --no-install-recommends xserver-xorg xinit
-```bash
+```
 Die Option "--no-install-recommends" sorgt dafür, dass die empfohlene Paketet nicht installiert werden. Und tatsächlich benötigen wir nur "xserver-xorg", "xinit" und deren direkte Abhängigkeiten, welches nach diesem Befehl installiert werden. "xinit" wird eigentlich nur benötigt, um die Desktop-Umgebung oder DM direkt aus der Shell starten zu können. Ansonsten scheint auch "xinit" überflüssig zu sein.
 
 
