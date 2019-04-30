@@ -38,12 +38,18 @@ sudo apt install sddm
 
 Hier installieren wir einfach nur komplett nacktes Desktop-Umgebung:
 ```bash
-sudo apt-get install --no-install-recommends xfce4 xfce4-terminal
+sudo apt-get install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme tango-icon-theme
 ```
-"xfce4" selbst besitzt eine Anghängigkeit zu einem der Terminals. Lässt man "xfce4-terminal" weg, so wird automatisch xterm installiert. Da xterm nicht mein Geschmack ist und LxTerminal designtechnisch nicht so gut in Xfce einpasste, entschied ich mich für leichtgewichtigen Xfce-Terminal. Apropo Design: Es ist zu empfehlen Gtk-Engine auch schon vorab zu installieren. Auch sind die Icons bei oben genannten Installation noch nicht vollständig. Das sähe dann eher unschön aus. Aber das lässt sich beheben mit:
+"xfce4" selbst besitzt eine Anghängigkeit zu einem der Terminals. Lässt man "xfce4-terminal" weg, so wird automatisch xterm installiert. Da xterm nicht mein Geschmack ist und LxTerminal designtechnisch nicht so gut in Xfce einpasste, entschied ich mich für leichtgewichtigen Xfce-Terminal.
+
+Apropo Design: Ohne einen Theme ist alles an GUI weiß. Das gefällt mir gar nicht. "blackbird-gtk-theme" fügt sich nahtlos in Xfce-Oberfläche ein. "blackbird-gtk-theme" empfehle ich auch immer mit "--no-install-recommends" zu installieren, weil sonst ein paar nicht funktionierende und viele weiße/helle Themes mitliefert werden. Xfce selbst liefert nur wenig an eigene Icons. Wenn die Icons nicht vollständig sind, dann sieht es eher unschön aus. "tango-icon-theme" passt sich gut dem Dark-Themes auf Xfce-Oberfläche an.
+
+Nach Themes kannst du leicht mit dem folgenden Befehl suchen:
 ```bash
-sudo apt install gtk3-engines-xfce tango-icon-theme
+aptitude search gtk-theme icon-theme
 ```
+Aber es gibt doch einige Themes, die manchmal nicht vollständig funktionieren bzw. nicht vollständig sind.
+
 Viel mehr wird auch erstmal für die Grundlage des GUI nicht benötigt. Nach dem Neustart dürfte Login-Bildschirm automatisch erscheinen, voraus gesetzt man hat diese installiert. Ansonsten braucht man nur in Shell einzuloggen und den Befehl "xinit" nutzen.
 
 #### Empfohlene Anwendungen für Xfce
