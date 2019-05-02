@@ -1,0 +1,98 @@
+#!/bin/bash
+
+main() {
+  RASPI_CONF=/boot/config.txt
+  GPU_MEM=192
+
+  if [ $(whoami) != "root" ]; then
+    echo "Ohne Root-Rechte geht's nicht!"
+    exit 1
+  fi
+
+  change_hostname
+  dpkg-reconfigure locales
+  dpkg-reconfigure tzdata
+  #dpkg-reconfigure keyboard-configuration
+  activate_modules
+  update_gpu_mem
+  update_dtoverlay
+  update_repos
+  upgrade_raspbian
+  passwd root && echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
+  shutdown -r
+}
+
+activate_modules() {
+  whiptail --yesno "Möchtest du SSH-Server einschalten?" 8 40
+  if [ $? -eq 0 ]; then
+    update-rc.d ssh enable && invoke-rc.d ssh start
+  fi
+}
+
+change_hostname() {
+  CUR_HOSTNAME=`cat /etc/hostname  | tr -d "\n\r\t"`
+  NEW_HOSTNAME=$(whiptail --inputbox "\nGib deinen neuen Hostnamen ein: " 9 35 "$CUR_HOSTNAME" 3>&1 1>&2 2>&3)
+
+  if [ $? -eq 0 ]; then
+    echo $NEW_HOSTNAME > /etc/hostname
+    sed -i "s/127.0.1.1.*$CUR_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+  fi
+}
+
+update_repos() {
+  echo "Setze Domain auf 'mirrordirector.raspbian.org' statt 'raspbian.raspberrypi.org'"
+  sed "s/raspbian.raspberrypi.org/mirrordirector.raspbian.org/" /etc/apt/sources.list
+  echo "Raspbian-Buster wird als alternative Quelle eingerichtet"
+  echo "deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" > /etc/apt/sources.list.d/buster.list
+  echo "#deb-src http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" >> /etc/apt/sources.list.d/buster.list
+echo 'Package: *
+Pin: release n=stretch
+Pin-Priority: 900
+
+Package: *
+Pin: release n=buster
+Pin-Priority: 750' > /etc/apt/preferences.d/buster
+}
+
+update_dtoverlay() {
+  confs_dtoverlay=$(cat $RASPI_CONF | grep ^dtoverlay=vc4-)
+  reg1="^dtoverlay=vc4-.*"
+
+  echo "Setze dtoverlay auf Fake-KMS"
+  if [ -n "$confs_dtoverlay" ]; then
+    for conf_dtoverlay in $confs_dtoverlay
+    do
+      sed $RASPI_CONF -i -e "s/$reg1/dtoverlay=vc4-fkms-v3d/"
+    done
+  else
+    echo -e "dtoverlay=vc4-fkms-v3d\n" >> $RASPI_CONF
+  fi
+}
+
+update_gpu_mem() {
+  confs_gpu_mem=$(cat $RASPI_CONF | grep ^gpu_mem.*=)
+  reg1="^gpu_mem=.*"
+  reg2="^gpu_mem_1024=.*"
+
+  echo "Setze GPU-Variable auf $GPU_MEM"
+  if [ -n "$confs_gpu_mem" ]; then
+    for conf_gpu_mem in $confs_gpu_mem
+    do
+      if [[ $conf_gpu_mem =~ $reg1 ]]; then
+        sed $RASPI_CONF -i -e "s/$reg1/gpu_mem=$GPU_MEM/"
+      fi
+      if [[ $conf_gpu_mem =~ $reg2 ]]; then
+        sed $RASPI_CONF -i -e "s/$reg2/gpu_mem_1024=$GPU_MEM/"
+      fi
+    done
+  else
+    echo -e "gpu_mem=$GPU_MEM\n" >> $RASPI_CONF
+  fi
+}
+
+upgrade_raspbian() {
+  apt update && apt -y full-upgrade && apt-get -y dist-upgrade && apt-get clean && rpi-update
+}
+
+
+main "$@"
