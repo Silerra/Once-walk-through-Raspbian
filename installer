@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ $(whoami) != "root" ]; then
+  echo "Ohne Root-Rechte geht's nicht!"
+  exit 1
+fi
+
+apt-get -y install --no-install-recommends xserver-xorg xinit
+apt- install sddm
+apt-get install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme
+apt install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
+
+
+
