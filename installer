@@ -5,10 +5,14 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
-apt-get -y install --no-install-recommends xserver-xorg xinit
-apt- install sddm
-apt-get install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme
-apt install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
+if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?" 9 40 ); then
+  echo "Die Installation erfolgt jetzt:"
 
+  apt-get -y install --no-install-recommends xserver-xorg xinit
+  apt- install sddm
+  apt-get install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme
+  apt install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
+fi
 
-
+rm .bashrc
+mv .bashrc.backup .bashrc
