@@ -18,14 +18,17 @@ main() {
   update_dtoverlay
   update_repos
   upgrade_raspbian
-  passwd root && echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
+
+  create_next_steps
+  echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
   shutdown -r
 }
 
 activate_modules() {
   whiptail --yesno "Möchtest du SSH-Server einschalten?" 8 40
   if [ $? -eq 0 ]; then
-    update-rc.d ssh enable && invoke-rc.d ssh start
+    update-rc.d ssh enable
+    invoke-rc.d ssh start
   fi
 }
 
@@ -37,6 +40,38 @@ change_hostname() {
     echo $NEW_HOSTNAME > /etc/hostname
     sed -i "s/127.0.1.1.*$CUR_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
   fi
+}
+
+create_next_steps() {
+  echo -e "$SUDO_USER:raspberry" | chpasswd
+
+  echo "[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
+" > /etc/systemd/system/getty@tty1.service.d/autologin.conf
+
+  cp $HOME/.bashrc $HOME/.bashrc.backup
+  cp /root/.bashrc /root/.bashrc.backup
+
+  cat >> /root/.bashrc << EOF
+NEW_NAME=\$(whiptail --inputbox "\nWähle einen Benutzernamen aus:" 9 40 "$SUDO_USER" 3>&1 1>&2 2>&3)
+usermod -l \$NEW_NAME -m -d /home/\$NEW_NAME $SUDO_USER
+groupmod -n \$NEW_NAME $SUDO_USER
+
+echo "[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin \$NEW_NAME --noclear %I \\\$TERM
+" > /etc/systemd/system/getty@tty1.service.d/autologin.conf
+
+rm .bashrc
+mv .bashrc.backup .bashrc
+sleep 4 && reboot
+EOF
+
+  cat >> $HOME/.bashrc << EOF
+echo "Passwort ist 'raspberry'"
+sudo bash gui_install
+EOF
 }
 
 update_repos() {
@@ -91,7 +126,11 @@ update_gpu_mem() {
 }
 
 upgrade_raspbian() {
-  apt update && apt -y full-upgrade && apt-get -y dist-upgrade && apt-get clean && rpi-update
+  apt update
+  apt -y full-upgrade
+  apt-get -y dist-upgrade
+  apt-get clean
+  rpi-update
 }
 
 
