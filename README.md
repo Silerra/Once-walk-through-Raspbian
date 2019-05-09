@@ -19,6 +19,13 @@ Viele Grüße
 Silerra
 
 
+#### Updates
+Es gibt jetzt die Möglichkeit die Basis automatisch durchlaufen zu lassen. Es ist im Prinzip ein automatischer Installer bzw. Konfigurator. Damit kann man auf die schnelle grundlegende Konfigurationen wie Host-/ Nutzernamen ändern, Sprachkonfiguration und automatischer Update.
+```bash
+wget -i https://silerra.github.io/Once-walk-through-Raspbian/file-list && sudo bash base-config
+```
+
+
 TODO:
 - Noob vs. Pinn
 - Es gibt nicht nur Raspbian
