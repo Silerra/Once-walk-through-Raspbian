@@ -2,7 +2,7 @@
 
 main() {
   RASPI_CONF=/boot/config.txt
-  GPU_MEM=192
+  GPU_MEM=128
 
   if [ $(whoami) != "root" ]; then
     echo "Ohne Root-Rechte geht's nicht!"
@@ -75,7 +75,7 @@ EOF
 
 update_repos() {
   echo "Setze Domain auf 'mirrordirector.raspbian.org' statt 'raspbian.raspberrypi.org'"
-  sed "s/raspbian.raspberrypi.org/mirrordirector.raspbian.org/" /etc/apt/sources.list
+  sed -i "s/raspbian.raspberrypi.org/mirrordirector.raspbian.org/" /etc/apt/sources.list
   echo "Raspbian-Buster wird als alternative Quelle eingerichtet"
   echo "deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" > /etc/apt/sources.list.d/buster.list
   echo "#deb-src http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" >> /etc/apt/sources.list.d/buster.list
