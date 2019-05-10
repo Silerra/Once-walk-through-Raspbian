@@ -21,7 +21,7 @@ main() {
 
   create_next_steps
   echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
-  shutdown -r
+  sleep 4 && reboot
 }
 
 activate_modules() {
@@ -50,7 +50,6 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin root --noclear %I \$TERM
 " > /etc/systemd/system/getty@tty1.service.d/autologin.conf
 
-  cp $HOME/.bashrc $HOME/.bashrc.backup
   cp /root/.bashrc /root/.bashrc.backup
 
   cat >> /root/.bashrc << EOF
@@ -65,12 +64,12 @@ ExecStart=-/sbin/agetty --autologin \$NEW_NAME --noclear %I \\\$TERM
 
 rm .bashrc
 mv .bashrc.backup .bashrc
-sleep 4 && reboot
-EOF
+cp /home/\$NEW_NAME/.bashrc /home/\$NEW_NAME/.bashrc.backup
 
-  cat >> $HOME/.bashrc << EOF
-echo "Passwort ist 'raspberry'"
+echo "echo \"Passwort ist 'raspberry'\"
 sudo bash gui_install
+" >> /home/\$NEW_NAME/.bashrc
+sleep 4 && reboot
 EOF
 }
 
