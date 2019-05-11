@@ -9,9 +9,9 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
   echo "Die Installation erfolgt jetzt:"
 
   apt-get -y install --no-install-recommends xserver-xorg xinit
-  apt install sddm
+  apt-get -y install sddm
   apt-get -y install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme
-  apt install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
+  apt-get -y install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
 fi
 
 rm .bashrc
