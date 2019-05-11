@@ -22,7 +22,7 @@ Silerra
 #### Updates
 Es gibt jetzt die Möglichkeit die Basis automatisch durchlaufen zu lassen. Es ist im Prinzip ein automatischer Installer bzw. Konfigurator. Damit kann man auf die schnelle grundlegende Konfigurationen wie Host-/ Nutzernamen ändern, Sprachkonfiguration und automatischer Update.
 ```bash
-wget -i http://owtr.silerra.de/file-list && sudo bash base-config
+wget -i https://owtr.silerra.de/file-list && sudo bash base-config
 ```
 
 
