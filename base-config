@@ -67,7 +67,7 @@ mv .bashrc.backup .bashrc
 cp /home/\$NEW_NAME/.bashrc /home/\$NEW_NAME/.bashrc.backup
 
 echo "echo \"Passwort ist 'raspberry'\"
-echo \"raspberry\" | sudo bash gui_install
+bash gui_install
 " >> /home/\$NEW_NAME/.bashrc
 sleep 4 && reboot
 EOF
