@@ -5,6 +5,11 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
+while [ -z "$pw" ]; do
+  new_pw=$( whiptail --passwordbox "Passwort wurde vorhin zurückgesetzt. Hier kannst du einen neuen angeben:" 9 40 3>&1 1>&2 2>&3 )
+done
+echo -e "$SUDO_USER:$new_pw" | chpasswd
+
 if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?" 9 40 ); then
   echo "Die Installation erfolgt jetzt:"
 
