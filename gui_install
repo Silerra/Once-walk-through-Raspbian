@@ -5,6 +5,10 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
+rm .bashrc
+mv .bashrc.backup .bashrc
+chown $SUDO_USER:$SUDO_USER .bashrc
+
 while [ -z "$new_pw" ]; do
   new_pw=$( whiptail --passwordbox "Passwort wurde vorhin zurückgesetzt. Hier kannst du einen neuen angeben:" 9 40 3>&1 1>&2 2>&3 )
 done
@@ -19,9 +23,6 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
   apt-get -y install tango-icon-theme meld mousepad ristretto xfce4-screenshooter thunar-volman libreoffice-l10n-de
 fi
 
-rm .bashrc
-mv .bashrc.backup .bashrc
-chown $SUDO_USER:$SUDO_USER .bashrc
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
 rm base-config file-list gui_install &&
 sleep 4 && reboot
