@@ -12,26 +12,24 @@ main() {
     exit 1
   fi
 
+  DEB_KEYRING_REPO="http://http.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb"
   DEB_REPO="http://deb.debian.org/debian/"
+  KERNEL_REPO="https://api.github.com/repos/sakaki-/bcmrpi3-kernel-bis/releases/latest"
   DTBS32_DIR="/boot/r32-dtbs"
   DTBS64_DIR="/boot/r64-dtbs"
   DTB_SELECT="/boot/*dtb"
-  KERNEL_TAR=$(tempfile)
-  DEB_KEYRING=$(tempfile)
   MACHINES_DIR="/var/lib/machines"
   CMD_NAME=$DEB64
   CMD_URI="/usr/local/bin/"
 
-  #download_kernel
-  #secure_kernel32
-  #extract_kernel_tar
-  #secure_kernel64
-  rm $KERNEL_TAR
-  #install_debian64
-  #create_autostart_client
+  secure_kernel32
+  upgrade_kernel
+  secure_kernel64
+  install_debian64
+  create_autostart_client
   asking_cmd_name
-  #create_starter_run
-  #create_starter_shell
+  create_starter_run
+  create_starter_shell
 }
 
 asking_cmd_name() {
@@ -88,28 +86,17 @@ EOF
   chmod +x $CMD_URI-shell
 }
 
-download_kernel() {
-  curl -s https://api.github.com/repos/sakaki-/bcmrpi3-kernel-bis/releases/latest \
-    | grep "browser_download_url.*tar\.xz" \
-    | cut -d : -f 2,3 \
-    | tr -d \" \
-    | wget -O $KERNEL_TAR -i -
-}
-
-extract_kernel_tar() {
-  tar --exclude='COPYING.linux' -xJf $KERNEL_TAR -C /
-  sync
-}
-
 install_debian64() {
-  wget -O $DEB_KEYRING -c http://http.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb
-  apt-get -y install $DEB_KEYRING
+  tmpKeyring=$(tempfile)
+  wget -O $tmpKeyring -c $DEB_KEYRING_REPO
+  apt-get -y install $tmpKeyring
   apt-get -y install debootstrap systemd-container zenity
   mkdir -pv $MACHINES_DIR
   echo "Die nachfolgende Installation kann bis 30 Minuten (oder sogar länger) dauern. Also bisschen Geduld ist angesagt."
   debootstrap --arch=arm64 --include=systemd-container,zenity stretch $MACHINES_DIR/$DEB64 $DEB_REPO
   echo "Deine Geduld hat sich gelohnt! Die nächsten Schritte erfolgen..."
   apt-get -y purge debian-archive-keyring
+  rm $tmpKeyring
 }
 
 secure_kernel32() {
@@ -121,6 +108,19 @@ secure_kernel32() {
 secure_kernel64() {
   mkdir -pv $DTBS64_DIR
   cp -v $DTB_SELECT $DTBS64_DIR
+}
+
+upgrade_kernel() {
+  tmpTar=$(tempfile)
+  curl -s $KERNEL_REPO \
+    | grep "browser_download_url.*tar\.xz" \
+    | cut -d : -f 2,3 \
+    | tr -d \" \
+    | wget -O $tmpTar -i -
+
+  tar --exclude='COPYING.linux' -xJf $tmpTar -C /
+  sync
+  rm tmpTar
 }
 
 main "$@"
