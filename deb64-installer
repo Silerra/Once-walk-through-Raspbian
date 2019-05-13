@@ -1,0 +1,126 @@
+#!/bin/bash
+
+main() {
+  if [ $(whoami) != "root" ]; then
+      echo "Ohne Root-Rechte geht's nicht!"
+      exit 1
+  fi
+
+  DEB64=$(whiptail --inputbox "\nWie soll der Debian-Client heißen?" 9 40 "debian-stretch-64" 3>&1 1>&2 2>&3)
+  if [ -z DEB64 ]; then
+    echo "Eingabe abgebrochen. Also wird das Programm beendet."
+    exit 1
+  fi
+
+  DEB_REPO="http://deb.debian.org/debian/"
+  DTBS32_DIR="/boot/r32-dtbs"
+  DTBS64_DIR="/boot/r64-dtbs"
+  DTB_SELECT="/boot/*dtb"
+  KERNEL_TAR=$(tempfile)
+  DEB_KEYRING=$(tempfile)
+  MACHINES_DIR="/var/lib/machines"
+  CMD_NAME=$DEB64
+  CMD_URI="/usr/local/bin/"
+
+  #download_kernel
+  #secure_kernel32
+  #extract_kernel_tar
+  #secure_kernel64
+  rm $KERNEL_TAR
+  #install_debian64
+  #create_autostart_client
+  asking_cmd_name
+  #create_starter_run
+  #create_starter_shell
+}
+
+asking_cmd_name() {
+  CMD_NAME=$(whiptail --inputbox "\nMöchtest du diesen Befehlbezeichnung beibehalten?" 9 40 "$DEB64")
+  if [ -z CMD_NAME ]; then
+    echo "Du hast die Frage unterbrochen. Befehl wird auf $DEB64 gesetzt."
+    CMD_NAME=$DEB64
+  fi
+  CMD_URI+=$DEB64
+}
+
+create_autostart_client() {
+  mkdir -pv /etc/systemd/nspawn
+  echo "[Exec]
+PrivateUsers=no
+Capability=CAP_NET_ADMIN
+
+[Files]
+Bind=/home/$SUDO_USER
+Bind=/run/user:/run/host-user/
+Bind=/etc/resolv.conf
+
+[Network]
+Private=no
+VirtualEthernet=no" >> /etc/systemd/nspawn/$DEB64.nspawn
+}
+
+create_starter_run() {
+  cat > $CMD_URI-run << EOF
+#!/bin/bash
+# Run the specified application, with any arguments, in the 64-bit Debian container,
+# using the host OS' X-Server. Also includes a QT fixup for apps that requires QT-libs.
+systemd-run \\
+    --setenv=QT_AUTO_SCREEN_SCALE_FACTOR=0 \\
+    --setenv=DISPLAY="\${DISPLAY}" \\
+    --uid=1000 --gid=1000 \\
+    --machine=$DEB64 \\
+    "\${@}"
+EOF
+  chmod +x $CMD_URI-run
+}
+
+create_starter_shell() {
+  cat > $CMD_URI-shell << EOF
+#!/bin/bash
+# Open a shell as $SUDO_USER into the 64-bit Debian container.
+exec machinectl shell \\
+    --setenv=QT_AUTO_SCREEN_SCALE_FACTOR=0 \\
+    --setenv=DISPLAY="\${DISPLAY}" \\
+    --uid=1000 \\
+    $DEB64 \\
+    /bin/bash
+EOF
+  chmod +x $CMD_URI-shell
+}
+
+download_kernel() {
+  curl -s https://api.github.com/repos/sakaki-/bcmrpi3-kernel-bis/releases/latest \
+    | grep "browser_download_url.*tar\.xz" \
+    | cut -d : -f 2,3 \
+    | tr -d \" \
+    | wget -O $KERNEL_TAR -i -
+}
+
+extract_kernel_tar() {
+  tar --exclude='COPYING.linux' -xJf $KERNEL_TAR -C /
+  sync
+}
+
+install_debian64() {
+  wget -O $DEB_KEYRING -c http://http.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb
+  apt-get -y install $DEB_KEYRING
+  apt-get -y install debootstrap systemd-container zenity
+  mkdir -pv $MACHINES_DIR
+  echo "Die nachfolgende Installation kann bis 30 Minuten (oder sogar länger) dauern. Also bisschen Geduld ist angesagt."
+  debootstrap --arch=arm64 --include=systemd-container,zenity stretch $MACHINES_DIR/$DEB64 $DEB_REPO
+  echo "Deine Geduld hat sich gelohnt! Die nächsten Schritte erfolgen..."
+  apt-get -y purge debian-archive-keyring
+}
+
+secure_kernel32() {
+  apt-mark hold raspberrypi-kernel
+  mkdir -pv $DTBS32_DIR
+  mv -v $DTB_SELECT $DTBS32_DIR
+}
+
+secure_kernel64() {
+  mkdir -pv $DTBS64_DIR
+  cp -v $DTB_SELECT $DTBS64_DIR
+}
+
+main "$@"
