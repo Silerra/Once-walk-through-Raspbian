@@ -14,7 +14,7 @@ main() {
 
   DEB_KEYRING_REPO="http://http.us.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb"
   DEB_REPO="http://deb.debian.org/debian/"
-  KERNEL_REPO="https://api.github.com/repos/sakaki-/bcmrpi3-kernel-bis/releases/latest"
+  KERNEL_INFO_REPO="https://api.github.com/repos/sakaki-/bcmrpi3-kernel-bis/releases/latest"
   DTBS32_DIR="/boot/r32-dtbs"
   DTBS64_DIR="/boot/r64-dtbs"
   DTB_SELECT="/boot/*dtb"
@@ -30,10 +30,15 @@ main() {
   asking_cmd_name
   create_starter_run
   create_starter_shell
+
+  echo "Installation abgeschlossen! Neustart steht an."
+  if ( whiptail --yesno "\nRaspbian jetzt neu starten?" 9 40 ); then
+    reboot
+  fi
 }
 
 asking_cmd_name() {
-  CMD_NAME=$(whiptail --inputbox "\nMöchtest du diesen Befehlbezeichnung beibehalten?" 9 40 "$DEB64")
+  CMD_NAME=$(whiptail --inputbox "\nMöchtest du diesen Befehlbezeichnung beibehalten?" 9 40 "$DEB64" 3>&1 1>&2 2>&3)
   if [ -z CMD_NAME ]; then
     echo "Du hast die Frage unterbrochen. Befehl wird auf $DEB64 gesetzt."
     CMD_NAME=$DEB64
@@ -87,7 +92,7 @@ EOF
 }
 
 install_debian64() {
-  tmpKeyring=$(tempfile)
+  tmpKeyring=$(tempfile -s .deb)
   wget -O $tmpKeyring -c $DEB_KEYRING_REPO
   apt-get -y install $tmpKeyring
   apt-get -y install debootstrap systemd-container zenity
@@ -112,7 +117,7 @@ secure_kernel64() {
 
 upgrade_kernel() {
   tmpTar=$(tempfile)
-  curl -s $KERNEL_REPO \
+  curl -s $KERNEL_INFO_REPO \
     | grep "browser_download_url.*tar\.xz" \
     | cut -d : -f 2,3 \
     | tr -d \" \
