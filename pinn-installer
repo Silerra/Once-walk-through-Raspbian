@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ $(whoami) != "root" ]; then
+  echo "Ohne Root-Rechte geht's nicht!"
+  exit 1
+fi
+
+case $1 in
+  i) install_pinn ;;
+  *) pre_install ;;
+esac
+
+pre_install() {
+  apt-get update
+  apt-get dist-upgrade
+  echo "Nach dem Neustart 'sudo pinn_installer i' eingeben"
+  sleep 12 && reboot
+}
+
+install_pinn() {
+  RECOVERY_PATH="/media/pi/MMC_P1"
+  PINN_ZIP=$(tempfile -s .zip)
+
+  wget -O $PINN_ZIP -c https://sourceforge.net/projects/pinn/files/pinn-lite.zip
+
+  mkdir -p $RECOVERY_PATH
+  mount -t vfat /dev/mmcblk0p1 $RECOVERY_PATH
+  find $RECOVERY_PATH -mindepth 1 -delete
+  unzip $PINN_ZIP -d $RECOVERY_PATH
+
+  if ( whiptail --yesno "\nMöchtest du Runinstaller von PINN deaktivieren?" 9 40 ); then
+    sed -i "s/runinstaller //g" $RECOVERY_PATH/recovery.cmdline
+  fi
+
+  if ( whiptail --yesno "\nRaspbian jetzt neu starten?" 9 40 ); then
+    reboot
+  fi
+}
