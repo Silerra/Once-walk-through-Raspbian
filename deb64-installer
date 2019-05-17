@@ -2,8 +2,8 @@
 
 main() {
   if [ $(whoami) != "root" ]; then
-      echo "Ohne Root-Rechte geht's nicht!"
-      exit 1
+    echo "Ohne Root-Rechte geht's nicht!"
+    exit 1
   fi
 
   DEB64=$(whiptail --inputbox "\nWie soll der Debian-Client heißen?" 9 40 "debian-stretch-64" 3>&1 1>&2 2>&3)
@@ -94,6 +94,7 @@ EOF
 install_debian64() {
   tmpKeyring=$(tempfile -s .deb)
   wget -O $tmpKeyring -c $DEB_KEYRING_REPO
+  chown $SUDO_USER:$SUDO_USER $tmpKeyring
   apt-get -y install $tmpKeyring
   apt-get -y install debootstrap systemd-container zenity
   mkdir -pv $MACHINES_DIR
@@ -116,7 +117,7 @@ secure_kernel64() {
 }
 
 upgrade_kernel() {
-  tmpTar=$(tempfile)
+  tmpTar=$(tempfile -s .tar.xz)
   curl -s $KERNEL_INFO_REPO \
     | grep "browser_download_url.*tar\.xz" \
     | cut -d : -f 2,3 \
@@ -124,8 +125,8 @@ upgrade_kernel() {
     | wget -O $tmpTar -i -
 
   tar --exclude='COPYING.linux' -xJf $tmpTar -C /
-  sync
-  rm tmpTar
+  sleep 2 && sync
+  sleep 4 && rm tmpTar
 }
 
 main "$@"
