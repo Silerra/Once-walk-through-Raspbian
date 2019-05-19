@@ -17,9 +17,11 @@ Jetzt schon zu viel des Guten? Nein, ich bin noch am Anfang und könnte noch gan
 
 Wie in der Einführung schon erwähnt, gibt verschiedene OS-Installer. Der bekannteste dürfte immernoch NOOB sein und wird gern mit Betriebssystem Raspbian Full geliefert. Dieses NOOB-Variante belegt aber schon einiges an Speicherplatz. Nun die OS-Installer bieten im Normalfall eine einfache Möglichkeit WLAN einzurichten und so wird dann die "Full"-Variante beinahe überflüssig. Ich sage deshalb "beinahe", weil diese Full-Version evtl. doch benötit wird. Nämlich dann wenn man versucht ohne Hilfe eines anderen PCs in Hidden-WLAN einzuloggen. (Über GUI ist mir bisher weder bei NOOB noch PINN gelungen.) Selbst unter Raspbian klappt das mit Hidden-WLAN nicht so einfach. Aber zum Glück reicht eine Konfigurationsdatei aus die man sogar leicht anlegen kann:
 ```bash
-file='/etc/wpa_supplicant/wpa_supplicant.conf' &&
-sudo echo -e "\033[36m\nErstelle die Datei '$file' mit dem Inhalt:\033[0m" &&
-echo 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+```
+Im Editor gibst du dann folgendes an:
+```bash
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 update_config=1
 country=DE
 
@@ -28,11 +30,12 @@ network={
 	scan_ssid=1
 	psk="<dein Wlan-Passwort>"
 }
-' | sudo tee $file && sudo chmod 644 $file && unset file
 ```
+Die Inhalte '<dein ssid>' und '<dein Wlan-Passwort>' ersetzt du natürlich mit entsprechenden Daten.
+
 Da wir unter einem OS-Installer ebenfalls WLAN benötigen werden, braucht es eigentlich nur die selbe Datei in entsprechenden Verzeichnis abgelegt zu werden. Das entsprechende Verzeichnis liegt aber auf eine andere Partition. Diese Partition trägt normalerweise den Namen "/dev/mmcblk0p5". Es ist auch möglich, dass die Settings-Partition einen anderen Namen trägt. Also schauen wir mit folgenden Befehl nach:
 ```bash
-lsblk --output NAME,SIZE,TYPE,MOUNTPOINT,LABEL
+lsblk --output NAME,SIZE,MOUNTPOINT,LABEL
 ```
 Wir brauchen die Partition mit dem Label "SETTINGS". Eventuell muss Mount-Befehl noch angepasst werden. Zeigt die Ausgabe des lsblk-Befehls bei SETTINGS-Partition einen Mountpoint an, dann ist der nachfolgende Befehl überflüssig:
 ```bash
@@ -42,13 +45,9 @@ Anschließend brauchst du die Datei nur noch zu kopieren:
 ```bash
 sudo cp /etc/wpa_supplicant/wpa_supplicant.conf /media/settings/
 ```
-Möglicherweise müsste der grade genannte Befehl angepasst werden und der mount-Befehl kann in aktuelleren Versionen von Raspbian eventuell übersprungen werden, da dieser bereits nach der Installation von Raspbian automatisch eingebunden ist.
-Jetzt braucht man nur noch den Raspbian dazu bringen die aktuelle Konfiguration zu laden:
-```bash
-sudo systemctl reenable wpa_supplicant.service
-sudo systemctl restart wpa_supplicant.service
-```
-Ehrlich gesagt habe ich die grad genannte systemctl-Befehle noch nicht getestet, da ich selber nie benötigt habe. Möglicherweise müsste man in der GUI noch <dein ssid> auf WLAN-Symbol anklicken, damit von da an automatisch verbindet. Aber spätestens nach einem Neustart wird sich OS-Installer sowie das Raspbian automatisch verbinden. Selbst wenn man das Betriebssystem neu installiert, wird diese Conf-Datei die wir grade nach settings verschoben haben automatisch in jeweiligen Installation eingefügt. (Zumindest ist es bei PINN so.) Der Grund also warum ich es nur einmal einrichten brauchte.
+Möglicherweise müsste der grade genannte Befehl angepasst werden und der mount-Befehl kann je nach Version von Raspbian eventuell übersprungen werden, da dieser bereits nach der Installation von Raspbian automatisch eingebunden ist.
+
+Theoretisch könnte man mit entsprechenden Kommandos die WLAN-Verbindung im Raspbian direkt herstellen. Aber da wir eigentlich nur im OS-Installer den WLAN freigeben wollten, würde jetzt einen Neustart an dieser Stelle völlig ausreichen. Von nun an wird die Conf-Datei bei jeder neuen OS-Installation automatisch zur Verfügung gestellt.
 
 
 ## NOOB ohne PC ersetzen
@@ -60,7 +59,7 @@ Ich selber bevorzuge PINN, da ich damit gute Erfahrung gemacht habe. PINN bietet
 
 ## Vorbereitung - Raspbian Lite
 
-Du kannst dich durch verschiedene Betriebssysteme probieren. Aber eine Sache ist auffällig: Es werden viele Derivate von Raspbian angeboten, wobei Raspbian selbst ein Derivat von Debian ARMHF-Version ist. (https://www.debian.org/distrib/netinst) Der große Vorteil an Raspbian ist, dass es komplett eigenen Dokumentationen, Support, Repositories usw. gibt. Wenn du was suchst reicht schon das Schlüsselwort "raspbian" aus. Wörter wie "debian" oder "ubuntu" können dir ähnliche Ergebnisse liefern. (Ich nutze z.B. gerne "ubuntu" in Kombination mit Befehlen wenn ich deren Funktionalitäten wissen möchte, da es einen sehr ausführlichen und sogar nahezu vollständige deutsche Fassung dazu gibt.)
+Du kannst dich durch verschiedene Betriebssysteme probieren. Aber eine Sache ist auffällig: Es werden viele Derivate von Raspbian angeboten, wobei Raspbian selbst ein Derivat von Debian ARMHF-Version (32-bit Variante) ist. (https://www.debian.org/distrib/netinst) Der große Vorteil an Raspbian ist, dass es komplett eigenen Dokumentationen, Support, Repositories usw. gibt. Wenn du was suchst reicht schon das Schlüsselwort "raspbian" aus. Wörter wie "debian" oder "ubuntu" können dir ähnliche Ergebnisse liefern. (Ich nutze z.B. gerne mal "ubuntu" in Kombination mit Befehlen wenn ich deren Funktionalitäten wissen möchte, da es einen sehr ausführlichen und sogar nahezu vollständige deutsche Fassung dazu gibt.)
 
 ### Aber warum geht hier mit Raspbian Lite weiter?
 
@@ -68,7 +67,9 @@ Der Grund und meine Motivation ist ganz einfach: Ich möchte Ressourcen sparen s
 
 ### Vorbereitung und Anpassungen
 
-Nun, nachdem Raspbian Lite installiert wurde, empfehle ich schon hier die ersten grundlegende Sachen festzulegen. Dazu logst dich als User "pi" ein mit dem Passwort "raspberrz" (statt "raspberry"). Die Tasten "z" und "y" sind noch vertauscht. Wird aber schon in nächsten Schritten behoben. Jetzt dazu der Befehl:
+Nun, nachdem Raspbian Lite installiert wurde, empfehle ich schon hier die ersten grundlegende Sachen festzulegen. Dazu logst dich als User "pi" ein mit dem Passwort "raspberrz" oder "raspberry". Die Tasten "z" und "y" sind eventuell noch vertauscht. Da ein Perl-Skript manchmal nicht schafft die entsprechende Tastaturbelegung rechtzeitig zu Verfügung zu stellen und/oder teilweise auch davon abhängig ist, was unter OS-Installer eingestellt wurde. Wenn du davon nicht gestört werden willst, kannst du versuchen dein Raspberry nochmal neu zu starten. Anschließend dürfte es komplett auf UTF-8 sein und kannst schon normal arbeiten.
+
+Wir gehen jetzt die Raspi-Konfiguration Schritt für Schritt durch und starten dabei einen Tool mit dem Befehl:
 ```bash
 sudo raspi-config
 ```
@@ -83,7 +84,7 @@ Unter "5 Interfacing Options" wird's spannend. Hier kann man verschiedene Module
 
 "6 Overclock" ist für 3B+ eher nutzlose Option. Die Fehlermeldung beschreibt es ja, wenn man drauf geht. Interessanterweise ist dies aber auf anderem Wege möglich. Aber meines Erachtens nicht notwendig, da erstens bei Last sich automatisch hoch taktet und zweitens nicht wirklich Vorteile bringt, wenn man nicht genug schnelle Speicher besitzt. Bei Raspberry Pi 3B+ ist es nur 1GB RAM welches auch teilsweise durch Grafik-Einheit genutzt wird.
 
-Unter "7 Advanced Options" gibt es mindestnes noch wirklich eine interessante Option: "A3 Memory Split" hat nämlich Einfluss auf CPU-Last. Ist der Speicher für Grafik-Einheit zu klein, dann steigt die GPU und indirekt CPU-Last, da es dann häufiger die grafische Elemente neu berechnen muss.
+Unter "7 Advanced Options" gibt es mindestnes noch wirklich eine interessante Option: "A3 Memory Split" hat nämlich Einfluss auf CPU-Last. Ist der Speicher für Grafik-Einheit zu klein, dann steigt die GPU und indirekt CPU-Last, da es dann häufiger die grafische Elemente neu berechnen muss. Der Optimale Wert lag bei mir oft bei 128 bzw. 192 MB, je nach dem was ich eingerichtiget habe. Für eine einfache Nutzung würde ich hier nichts einstellen. Wenn nichts eingestellt ist, wird dieser Wert irgendwie automatisch festgelegt (bei mir ist irgendwie 76 MB). Wonach diese Werte dann richten kann ich leider nicht sagen, da mir nur wenig über diese Angelegenheiten bekannt ist. Man kann aber die aktuelle Größe des Speichers mit dem Befehl ```bash vcgencmd get_mem gpu ``` einsehen.
 
 Zuletzt ist unter "7 Advanced Options" noch eine weitere Option von Bedeutung: "A7 GL Driver" wird "G2 GL (Fake KMS)" für arm64-Projekt benötigt. KMS ist ein OpenGL-Desktop-Treiber und kann von OpenGL aus entweder Kernel-KMS-Treiber (Full KMS) oder DispmanX API for composition (Fake KMS) verwendet werden. Da beim arm64-Projekt Video-Playback zum Einsatz kommt, macht es wenig Sinn über Kernel laufen zu lassen, wenn man die Bilder direkt an Bildschirm schicken kann. (Quelle: https://www.raspberrypi.org/forums/viewtopic.php?t=192017)
 
@@ -91,7 +92,7 @@ Somit wäre man mit Raspi-Konfiguration durch und können einfach mit Escape-Tas
 ```bash
 sudo apt edit-sources
 ```
-und ändern die Repository:
+Wählst einen Editor aus (am besten nano, da am einfachsten) und änderst das Repository:
 ```bash
 deb http://raspbian.raspberrypi.org/raspbian/ stretch main contrib non-free rpi
 ```
@@ -99,23 +100,21 @@ wir ersetzen "raspbian.raspberrypi.org" durch "mirrordirector.raspbian.org":
 ```bash
 deb http://mirrordirector.raspbian.org/raspbian/ stretch main contrib non-free rpi
 ```
-und anschließend drücke strg+x und bestätige mit "j" und speichere unter gleichen Datei-Namen. Jetzt noch:
+und anschließend drücke strg+x und bestätige mit "j" und speichere unter gleichen Datei-Namen. Der Kommando "apt edit-sources" scheckt jetzt ob alles korrekt ist. Wenn alles geklappt hat kommt dann keine Fehlermeldung stattdessen aber "Ihre »/etc/apt/sources.list«-Datei wurde verändert, bitte führen Sie »apt-get update« aus." (Der Text kann noch in Englisch sein!). Und das machen wir jetzt auch mit dem Befehl:
 ```bash
-sudo apt update && sudo apt full-upgrade
+sudo apt update && sudo apt dist-upgrade
 ```
-Somit werden die Updates über entprechende topologisch nächstliegende Spiegel-Server aktualisiert. Das kann bei zahlreichen Paketen doch recht ordentlichen zeitlichen Unterschied machen. Bestimmt denkst du jetzt wurde alles aktualisiert. Nein, es folgen noch zwei weitere Befehle:
-```bash
-sudo apt-get dist-upgrade
-```
-Wobei dist-upgrade eventuell überflüssig ist. Aber sicher ist sicher. Jetzt noch:
+Somit werden die Updates über entprechende topologisch nächstliegende Spiegel-Server aktualisiert. Das kann bei zahlreichen Paketen doch recht ordentlichen zeitlichen Unterschied machen.
+
+Unter Umständen kann es noch Sinn machen die Firmware von Raspberry Pi zu aktualisieren:
 ```bash
 sudo rpi-update
 ```
-Und ja, hier folgt garantiert noch ein Firmware-Update (wenn du nicht vor kurzem gemacht hast). Das ist nämlich das was vor dem PINN geladen wird (Rainbow-Screen). Zu guter Letzt noch das ganze bereinigen:
+Sehr wahrscheinlich kommt hier auch einen neuen Firmware-Update. Die Firmware erscheint auf deinem Raspberry als Rainbow-Screen und wird geladen bevor OS-Installer geladen wird. Zu guter Letzt noch das ganze bereinigen:
 ```bash
-sudo apt-get clean
+sudo apt-get clean && sudo apt autoremove
 ```
-Vor dem Reboot noch einen Passwort für root setzen. Aber Vorsicht mit dem Sonderzeichen!:
+Vor dem Reboot noch einen Passwort für root setzen. Aber Vorsicht mit dem Sonderzeichen, wenn deine Tastatur bis hier hin noch nicht auf QWERTZ läuft!:
 ```bash
 sudo passwd root
 ```
@@ -131,11 +130,12 @@ groupmod -n newUsername pi
 passwd newUsername
 logout
 ```
-Neben setzen neuen Username macht auch Sinn den Home-Verzeichnis und den Gruppennamen ebenfalls zu ändern. Wobei Gruppenname eher optional ist. Für arm64-Projekt sollte aber der Home-Verzeichnis, Nutzername und Gruppenname gleich sein, um mögliche Probleme zu vermeiden. Die Passwort-Änderung machte vorher nur wenig Sinn, da der Zeichensatz für die Tastatur erst nach dem Local-Settings, Update und Neustart auf deutschem Layout gesetzt wird.
+Neben setzen neuen Username macht auch Sinn den Home-Verzeichnis und den Gruppennamen ebenfalls zu ändern. Wobei Gruppenname eher optional ist. Für arm64-Projekt sollte aber der Home-Verzeichnis, Nutzername und Gruppenname gleich sein, um mögliche Probleme zu vermeiden.
 
 Nach dem Logout, kannst du dich mit neuen Nutzernamen einloggen. Passwort für root brauchen wir nicht mehr:
 ```bash
 sudo passwd -d root
 ```
+Du kannst zudem dein aktuelles Account auch direkt mit dem Befehl ```bash passwd``` anpassen.
 
 Somit wäre die komplette Vorbereitung abgeschlossen. Einige der nachfolgenden Projekte werden von diesen Vorbereitungen profitieren bzw. manche davon werden darauf aufgebaut!

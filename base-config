@@ -1,9 +1,6 @@
 #!/bin/bash
 
 main() {
-  RASPI_CONF=/boot/config.txt
-  GPU_MEM=128
-
   if [ $(whoami) != "root" ]; then
     echo "Ohne Root-Rechte geht's nicht!"
     exit 1
@@ -14,8 +11,6 @@ main() {
   dpkg-reconfigure tzdata
   #dpkg-reconfigure keyboard-configuration
   activate_modules
-  update_gpu_mem
-  update_dtoverlay
   update_repos
   upgrade_raspbian
 
@@ -25,8 +20,7 @@ main() {
 }
 
 activate_modules() {
-  whiptail --yesno "Möchtest du SSH-Server einschalten?" 8 40
-  if [ $? -eq 0 ]; then
+  if ( whiptail --yesno "\nMöchtest du SSH-Server einschalten?" 9 40 ); then
     update-rc.d ssh enable
     invoke-rc.d ssh start
   fi
@@ -79,7 +73,7 @@ update_repos() {
   echo "Raspbian-Buster wird als alternative Quelle eingerichtet"
   echo "deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" > /etc/apt/sources.list.d/buster.list
   echo "#deb-src http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" >> /etc/apt/sources.list.d/buster.list
-echo 'Package: *
+  echo 'Package: *
 Pin: release n=stretch
 Pin-Priority: 900
 
@@ -88,47 +82,11 @@ Pin: release n=buster
 Pin-Priority: 750' > /etc/apt/preferences.d/buster
 }
 
-update_dtoverlay() {
-  confs_dtoverlay=$(cat $RASPI_CONF | grep ^dtoverlay=vc4-)
-  reg1="^dtoverlay=vc4-.*"
-
-  echo "Setze dtoverlay auf Fake-KMS"
-  if [ -n "$confs_dtoverlay" ]; then
-    for conf_dtoverlay in $confs_dtoverlay
-    do
-      sed $RASPI_CONF -i -e "s/$reg1/dtoverlay=vc4-fkms-v3d/"
-    done
-  else
-    echo -e "dtoverlay=vc4-fkms-v3d\n" >> $RASPI_CONF
-  fi
-}
-
-update_gpu_mem() {
-  confs_gpu_mem=$(cat $RASPI_CONF | grep ^gpu_mem.*=)
-  reg1="^gpu_mem=.*"
-  reg2="^gpu_mem_1024=.*"
-
-  echo "Setze GPU-Variable auf $GPU_MEM"
-  if [ -n "$confs_gpu_mem" ]; then
-    for conf_gpu_mem in $confs_gpu_mem
-    do
-      if [[ $conf_gpu_mem =~ $reg1 ]]; then
-        sed $RASPI_CONF -i -e "s/$reg1/gpu_mem=$GPU_MEM/"
-      fi
-      if [[ $conf_gpu_mem =~ $reg2 ]]; then
-        sed $RASPI_CONF -i -e "s/$reg2/gpu_mem_1024=$GPU_MEM/"
-      fi
-    done
-  else
-    echo -e "gpu_mem=$GPU_MEM\n" >> $RASPI_CONF
-  fi
-}
-
 upgrade_raspbian() {
   apt update
-  apt -y full-upgrade
   apt-get -y dist-upgrade
   apt-get clean
+  apt-get -y autoremove
   rpi-update
 }
 

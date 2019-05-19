@@ -21,7 +21,11 @@ main() {
   MACHINES_DIR="/var/lib/machines"
   CMD_NAME=$DEB64
   CMD_URI="/usr/local/bin/"
+  RASPI_CONF="/boot/config.txt"
+  GPU_MEM=128
 
+  update_gpu_mem
+  update_dtoverlay
   secure_kernel32
   upgrade_kernel
   secure_kernel64
@@ -116,6 +120,42 @@ secure_kernel64() {
   cp -v $DTB_SELECT $DTBS64_DIR
 }
 
+update_dtoverlay() {
+  confs_dtoverlay=$(cat $RASPI_CONF | grep ^dtoverlay=vc4-)
+  reg1="^dtoverlay=vc4-.*"
+
+  echo "Setze dtoverlay auf Fake-KMS"
+  if [ -n "$confs_dtoverlay" ]; then
+    for conf_dtoverlay in $confs_dtoverlay
+    do
+      sed $RASPI_CONF -i -e "s/$reg1/dtoverlay=vc4-fkms-v3d/"
+    done
+  else
+    echo -e "dtoverlay=vc4-fkms-v3d\n" >> $RASPI_CONF
+  fi
+}
+
+update_gpu_mem() {
+  confs_gpu_mem=$(cat $RASPI_CONF | grep ^gpu_mem.*=)
+  reg1="^gpu_mem=.*"
+  reg2="^gpu_mem_1024=.*"
+
+  echo "Setze GPU-Variable auf $GPU_MEM"
+  if [ -n "$confs_gpu_mem" ]; then
+    for conf_gpu_mem in $confs_gpu_mem
+    do
+      if [[ $conf_gpu_mem =~ $reg1 ]]; then
+        sed $RASPI_CONF -i -e "s/$reg1/gpu_mem=$GPU_MEM/"
+      fi
+      if [[ $conf_gpu_mem =~ $reg2 ]]; then
+        sed $RASPI_CONF -i -e "s/$reg2/gpu_mem_1024=$GPU_MEM/"
+      fi
+    done
+  else
+    echo -e "gpu_mem=$GPU_MEM\n" >> $RASPI_CONF
+  fi
+}
+
 upgrade_kernel() {
   tmpTar=$(tempfile -s .tar.xz)
   curl -s $KERNEL_INFO_REPO \
@@ -128,5 +168,6 @@ upgrade_kernel() {
   sleep 2 && sync
   sleep 4 && rm tmpTar
 }
+
 
 main "$@"
