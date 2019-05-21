@@ -1,4 +1,4 @@
 base-config
-gui_install
+gui-installer
 deb64-installer
 pinn-installer
