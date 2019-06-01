@@ -21,9 +21,10 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
   apt-get -y install sddm
   apt-get -y install --no-install-recommends xfce4 xfce4-terminal blackbird-gtk-theme
   apt-get -y install tango-icon-theme meld mousepad ristretto xfce4-notifyd xfce4-screenshooter
-  apt-get -y install thunar-volman gparted libreoffice-l10n-de
+  apt-get -y install thunar-volman gparted
+  apt-get -y install libreoffice-l10n-de libreoffice-writer libreoffice-calc libreoffice-impress
 fi
 
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
-rm base-config file-list gui_install &&
+rm base-config file-list gui-installer &&
 sleep 4 && reboot
