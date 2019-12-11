@@ -7,6 +7,7 @@ main() {
   fi
 
   change_hostname
+  change_swapsize "1024"
   dpkg-reconfigure locales
   dpkg-reconfigure tzdata
   #dpkg-reconfigure keyboard-configuration
@@ -34,6 +35,10 @@ change_hostname() {
     echo $NEW_HOSTNAME > /etc/hostname
     sed -i "s/127.0.1.1.*$CUR_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
   fi
+}
+
+change_swapsize() {
+  sed -i "s/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=$1/g" /etc/dphys-swapfile
 }
 
 create_next_steps() {
@@ -70,16 +75,16 @@ EOF
 update_repos() {
   echo "Setze Domain auf 'mirrordirector.raspbian.org' statt 'raspbian.raspberrypi.org'"
   sed -i "s/raspbian.raspberrypi.org/mirrordirector.raspbian.org/" /etc/apt/sources.list
-  echo "Raspbian-Buster wird als alternative Quelle eingerichtet"
-  echo "deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" > /etc/apt/sources.list.d/buster.list
-  echo "#deb-src http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" >> /etc/apt/sources.list.d/buster.list
-  echo 'Package: *
-Pin: release n=stretch
-Pin-Priority: 900
+#   echo "Raspbian-Buster wird als alternative Quelle eingerichtet"
+#   echo "deb http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" > /etc/apt/sources.list.d/buster.list
+#   echo "#deb-src http://mirrordirector.raspbian.org/raspbian/ buster main contrib non-free rpi" >> /etc/apt/sources.list.d/buster.list
+#   echo 'Package: *
+# Pin: release n=stretch
+# Pin-Priority: 900
 
-Package: *
-Pin: release n=buster
-Pin-Priority: 750' > /etc/apt/preferences.d/buster
+# Package: *
+# Pin: release n=buster
+# Pin-Priority: 750' > /etc/apt/preferences.d/buster
 }
 
 upgrade_raspbian() {
@@ -87,7 +92,7 @@ upgrade_raspbian() {
   apt-get -y dist-upgrade
   apt-get clean
   apt-get -y autoremove
-  rpi-update
+  # rpi-update
 }
 
 
