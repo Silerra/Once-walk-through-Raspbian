@@ -1,5 +1,53 @@
 #!/bin/bash
 
+session_manager=(sddm)
+desktop=(
+  xfce4
+  gtk3-engines-xfce
+  tango-icon-theme
+  blackbird-gtk-theme
+  blueman
+  network-manager-gnome
+)
+tools=(
+  bluealsa
+  gthumb
+  gparted
+  meld
+  mousepad
+  thunar-volman
+  volumeicon-alsa
+  xarchiver
+  xfce4-cpugraph-plugin
+  xfce4-notifyd
+  xfce4-screenshooter
+  xfce4-taskmanager
+  xfce4-terminal
+)
+office=(
+  libreoffice-l10n-de
+)
+
+install_packages() {
+  attempts=0
+  
+  until [ $? -eq 0 -a "$attempts" -lt 3 ]; do
+    if [ "$attempts" -gt 0 ]; then
+      echo "Fehler bei der Installation. Versuche zu reparieren:"
+      apt-get update
+    fi
+
+    apt-get -y install "$@"
+
+    attempts++
+  done
+
+  if [ attempts -eq 3 ]; then
+    echo "Alle Versuche sind fehlgeschlagen. Die Installation kann nicht mehr fortgesetzt werden."
+    exit 1
+  fi
+}
+
 if [ $(whoami) != "root" ]; then
   echo "Ohne Root-Rechte geht's nicht!"
   exit 1
@@ -16,17 +64,14 @@ done
 echo -e "$SUDO_USER:$new_pw" | chpasswd
 
 if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?" 9 40 ); then
-  echo "Die Installation erfolgt jetzt:"
-
   sed -i "s/\[all\]/\[all\]\ndtoverlay=vc4-fkms-v3d\ngpu_mem=128/g" /boot/config.txt
 
-  apt-get -y install --no-install-recommends xserver-xorg xinit
-  apt-get -y install sddm
-  apt-get -y install --no-install-recommends xfce4 xfce4-terminal \
-  blackbird-gtk-theme gtk3-engines-xfce tango-icon-theme blueman network-manager-gnome
-  apt-get -y install meld mousepad gthumb xfce4-notifyd xfce4-screenshooter
-  apt-get -y install thunar-volman gparted xfce4-cpugraph-plugin bluealsa volumeicon-alsa xfce4-taskmanager xarchiver
-  apt-get -y install libreoffice-l10n-de libreoffice-writer libreoffice-calc libreoffice-impress
+  echo "Die Installation erfolgt jetzt:"
+
+  install_packages "${session_manager[@]}"
+  install_packages "--no-install-recommends" "${desktop[@]}"
+  install_packages "${tools[@]}"
+  install_packages "${office[@]}"
 fi
 
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
