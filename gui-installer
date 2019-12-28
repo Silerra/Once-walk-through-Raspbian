@@ -31,15 +31,19 @@ office=(
 install_packages() {
   attempts=0
   
-  until [ $? -eq 0 -a "$attempts" -lt 3 ]; do
+  while true; do
     if [ "$attempts" -gt 0 ]; then
       echo "Fehler bei der Installation. Versuche zu reparieren:"
-      apt-get update
+      apt-get update --fix-missing
     fi
 
     apt-get -y install "$@"
 
-    attempts++
+    if [ $? -ne 0 -a "$attemps" -lt 3 ]; then
+      ((attempts++))
+    else
+      break;
+    fi
   done
 
   if [ "$attempts" -eq 3 ]; then
