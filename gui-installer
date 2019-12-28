@@ -81,6 +81,8 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
   install_packages "--no-install-recommends" "${desktop[@]}"
   install_packages "${tools[@]}"
   install_packages "${office[@]}"
+
+  xfconf-query -c xsettings -p /Net/ThemeName -s "Blackbird"
 fi
 
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
