@@ -26,6 +26,9 @@ tools=(
 )
 office=(
   libreoffice-l10n-de
+  libreoffice-writer
+  libreoffice-calc
+  libreoffice-impress
 )
 
 install_packages() {
@@ -81,5 +84,6 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
 fi
 
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
-rm base-config file-list gui-installer &&
-sleep 4 && reboot
+rm base-config file-list gui-installer
+sleep 4
+reboot
