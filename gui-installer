@@ -35,6 +35,8 @@ install_packages() {
     if [ "$attempts" -gt 0 ]; then
       echo "Fehler bei der Installation. Versuche zu reparieren:"
       apt-get update --fix-missing
+      apt-get upgrade
+      sleep 4
     fi
 
     apt-get -y install "$@"
