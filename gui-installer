@@ -44,7 +44,7 @@ install_packages() {
 
     apt-get -y install "$@"
 
-    if [ $? -ne 0 -a "$attemps" -lt 3 ]; then
+    if [ $? -ne 0 -a "$attempts" -lt 3 ]; then
       ((attempts++))
     else
       break;
