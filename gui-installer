@@ -35,7 +35,7 @@ install_packages() {
   attempts=1
   
   while true; do
-    if [ "$attempts" -gt 0 ]; then
+    if [ "$attempts" -gt 1 ]; then
       echo "Fehler bei der Installation. Versuche zu reparieren:"
       apt-get update --fix-missing
       apt-get upgrade
