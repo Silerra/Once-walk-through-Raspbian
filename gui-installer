@@ -32,7 +32,7 @@ office=(
 )
 
 install_packages() {
-  attempts=0
+  attempts=1
   
   while true; do
     if [ "$attempts" -gt 0 ]; then
@@ -83,6 +83,12 @@ if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?
   install_packages "${office[@]}"
 
   xfconf-query -c xsettings -p /Net/ThemeName -s "Blackbird"
+  echo '[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=VolumeIcon
+Comment=Volume Icon for ALSA
+Exec=volumeicon' > /etc/xdg/autostart/VolumeIcon.desktop
 fi
 
 rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
