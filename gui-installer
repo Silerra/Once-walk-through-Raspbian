@@ -31,6 +31,33 @@ office=(
   libreoffice-impress
 )
 
+main() {
+  if [ $(whoami) != "root" ]; then
+    echo "Ohne Root-Rechte geht's nicht!"
+    exit 1
+  fi
+
+  restore_baschrc
+  change_password
+  option_gui_installation
+  cleanup
+  sleep 4
+  reboot
+}
+
+change_password() {
+  while [ -z "$new_pw" ]; do
+    new_pw=$( whiptail --passwordbox "Passwort wurde vorhin zurückgesetzt. 
+    Hier kannst du einen neuen angeben:" 9 40 3>&1 1>&2 2>&3 )
+  done
+  echo -e "$SUDO_USER:$new_pw" | chpasswd
+}
+
+cleanup() {
+  rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
+  rm base-config file-list gui-installer
+}
+
 install_packages() {
   attempts=1
   
@@ -57,41 +84,32 @@ install_packages() {
   fi
 }
 
-if [ $(whoami) != "root" ]; then
-  echo "Ohne Root-Rechte geht's nicht!"
-  exit 1
-fi
+option_gui_installation() {
+  if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?" 9 40 ); then
+    sed -i "s/\[all\]/\[all\]\ndtoverlay=vc4-fkms-v3d\ngpu_mem=128/g" /boot/config.txt
 
-rm .bashrc
-mv .bashrc.backup .bashrc
-chown $SUDO_USER:$SUDO_USER .bashrc
+    echo "Die Installation erfolgt jetzt:"
 
-while [ -z "$new_pw" ]; do
-  new_pw=$( whiptail --passwordbox "Passwort wurde vorhin zurückgesetzt. 
-  Hier kannst du einen neuen angeben:" 9 40 3>&1 1>&2 2>&3 )
-done
-echo -e "$SUDO_USER:$new_pw" | chpasswd
+    install_packages "${session_manager[@]}"
+    install_packages "--no-install-recommends" "${desktop[@]}"
+    install_packages "${tools[@]}"
+    install_packages "${office[@]}"
 
-if ( whiptail --yesno "Möchtest du Xfce als grafische Oberfläche installieren?" 9 40 ); then
-  sed -i "s/\[all\]/\[all\]\ndtoverlay=vc4-fkms-v3d\ngpu_mem=128/g" /boot/config.txt
-
-  echo "Die Installation erfolgt jetzt:"
-
-  install_packages "${session_manager[@]}"
-  install_packages "--no-install-recommends" "${desktop[@]}"
-  install_packages "${tools[@]}"
-  install_packages "${office[@]}"
-
-  xfconf-query -c xsettings -p /Net/ThemeName -s "Blackbird"
-  echo '[Desktop Entry]
+    xfconf-query -c xsettings -p /Net/ThemeName -s "Blackbird"
+    echo '[Desktop Entry]
 Encoding=UTF-8
 Type=Application
 Name=VolumeIcon
 Comment=Volume Icon for ALSA
 Exec=volumeicon' > /etc/xdg/autostart/VolumeIcon.desktop
-fi
+  fi
+}
 
-rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
-rm base-config file-list gui-installer
-sleep 4
-reboot
+restore_baschrc() { #TODO: Check file is exists
+  rm .bashrc
+  mv .bashrc.backup .bashrc
+  chown $SUDO_USER:$SUDO_USER .bashrc
+}
+
+
+main "$@"
