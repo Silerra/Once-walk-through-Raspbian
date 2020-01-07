@@ -105,10 +105,12 @@ Exec=volumeicon' > /etc/xdg/autostart/VolumeIcon.desktop
   fi
 }
 
-restore_baschrc() { #TODO: Check file is exists
-  rm .bashrc
-  mv .bashrc.backup .bashrc
-  chown $SUDO_USER:$SUDO_USER .bashrc
+restore_baschrc() {
+  if [ -f .bashrc.backup ]; then
+    rm .bashrc
+    mv .bashrc.backup .bashrc
+    chown $SUDO_USER:$SUDO_USER .bashrc
+  fi
 }
 
 
