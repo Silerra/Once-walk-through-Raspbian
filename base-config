@@ -6,14 +6,14 @@ main() {
     exit 1
   fi
 
-  change_hostname
-  change_swapsize "1024"
   dpkg-reconfigure locales
   dpkg-reconfigure tzdata
+  update_repos
+  change_hostname
+  change_swapsize "1024"
   #dpkg-reconfigure keyboard-configuration
   activate_modules
-  update_repos
-  upgrade_raspbian
+  #upgrade_raspbian
 
   create_next_steps
   echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
@@ -89,9 +89,12 @@ update_repos() {
 
 upgrade_raspbian() {
   apt update
-  apt-get -y dist-upgrade
-  apt-get clean
-  apt-get -y autoremove
+  apt -y full-upgrade
+  apt -y autoclean
+  apt -y autoremove
+  #apt-get -y dist-upgrade
+  #apt-get clean
+  #apt-get -y autoremove
   # rpi-update
 }
 
