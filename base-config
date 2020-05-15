@@ -8,12 +8,12 @@ main() {
 
   dpkg-reconfigure locales
   dpkg-reconfigure tzdata
-  update_repos
+  #update_repos
+  upgrade_raspbian
   change_hostname
   change_swapsize "1024"
   #dpkg-reconfigure keyboard-configuration
   activate_modules
-  #upgrade_raspbian
 
   create_next_steps
   echo "So, Teil 1 ist fertig! Jetzt wird neugestartet."
