@@ -64,12 +64,12 @@ install_packages() {
   while true; do
     if [ "$attempts" -gt 1 ]; then
       echo "Fehler bei der Installation. Versuche zu reparieren:"
-      apt-get update --fix-missing
-      apt-get upgrade
+      apt update --fix-missing
+      apt -y upgrade
       sleep 4
     fi
 
-    apt-get -y install "$@"
+    apt -y install "$@"
 
     if [ $? -ne 0 -a "$attempts" -lt 3 ]; then
       ((attempts++))
