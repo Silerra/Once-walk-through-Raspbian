@@ -61,9 +61,11 @@ ExecStart=
 ExecStart=-/sbin/agetty --autologin \$NEW_NAME --noclear %I \\\$TERM
 " > /etc/systemd/system/getty@tty1.service.d/autologin.conf
 
-rm .bashrc
-mv .bashrc.backup .bashrc
-cp /home/\$NEW_NAME/.bashrc /home/\$NEW_NAME/.bashrc.backup
+if [ -f .bashrc.backup ]; then
+  rm .bashrc
+  mv .bashrc.backup .bashrc
+  cp /home/\$NEW_NAME/.bashrc /home/\$NEW_NAME/.bashrc.backup
+fi
 
 echo "echo \"Passwort ist 'raspberry'\"
 echo \"raspberry\" | sudo -S bash gui-installer
